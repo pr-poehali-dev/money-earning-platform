@@ -16,6 +16,7 @@ const Index = () => {
   const [showReferralCard, setShowReferralCard] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
+  const [earningsHistory, setEarningsHistory] = useState<number[]>([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -35,6 +36,11 @@ const Index = () => {
       setShowReferralCard(true);
       setReferralCount(savedCount);
       setTotalEarnings(savedEarnings);
+      
+      const savedHistory = localStorage.getItem('earnings_history');
+      if (savedHistory) {
+        setEarningsHistory(JSON.parse(savedHistory));
+      }
     }
   }, []);
 
@@ -48,7 +54,34 @@ const Index = () => {
     localStorage.setItem('my_referral_id', newId);
     
     createCoinAnimation();
+    playSound('success');
     toast.success('Реферальная ссылка создана! Делитесь с друзьями!');
+  };
+
+  const playSound = (type: 'coin' | 'success') => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    if (type === 'coin') {
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } else {
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    }
   };
 
   const simulateReferral = () => {
@@ -57,10 +90,15 @@ const Index = () => {
     setReferralCount(newCount);
     setTotalEarnings(newEarnings);
     
+    const newHistory = [...earningsHistory, newEarnings];
+    setEarningsHistory(newHistory);
+    
     localStorage.setItem('referral_count', newCount.toString());
     localStorage.setItem('total_earnings', newEarnings.toString());
+    localStorage.setItem('earnings_history', JSON.stringify(newHistory));
     
     createCoinAnimation();
+    playSound('coin');
     toast.success(`🎉 Новый реферал! +200₽ к заработку!`);
   };
 
@@ -373,6 +411,34 @@ const Index = () => {
                   <div className="text-sm font-semibold opacity-90">Заработано</div>
                 </div>
               </div>
+
+              {earningsHistory.length > 0 && (
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 mb-6 border-2 border-blue-200">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Icon name="TrendingUp" size={24} className="text-blue-600" />
+                    <h4 className="text-lg font-bold text-gray-900">График роста заработка</h4>
+                  </div>
+                  <div className="relative h-40 flex items-end gap-2">
+                    {earningsHistory.map((earning, index) => {
+                      const maxEarning = Math.max(...earningsHistory);
+                      const height = (earning / maxEarning) * 100;
+                      return (
+                        <div key={index} className="flex-1 flex flex-col items-center gap-1">
+                          <div className="text-xs font-bold text-primary">{earning}₽</div>
+                          <div 
+                            className="w-full bg-gradient-to-t from-primary to-accent rounded-t-lg transition-all duration-500 hover:opacity-80"
+                            style={{ height: `${height}%` }}
+                          />
+                          <div className="text-xs text-gray-600">{index + 1}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="text-center mt-4 text-sm text-gray-600">
+                    Рост заработка по рефералам
+                  </div>
+                </div>
+              )}
               
               <div className="bg-white rounded-xl p-4 mb-4 border-2 border-dashed border-primary/30">
                 <p className="text-sm text-gray-500 mb-2 font-semibold">Твоя ссылка:</p>
