@@ -17,6 +17,14 @@ const Index = () => {
   const [referralCount, setReferralCount] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [earningsHistory, setEarningsHistory] = useState<number[]>([]);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [balance, setBalance] = useState(0);
+  const [hasCard, setHasCard] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawMethod, setWithdrawMethod] = useState('card');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -24,6 +32,19 @@ const Index = () => {
     if (refId) {
       localStorage.setItem('referral_id', refId);
       toast.success(`Вы перешли по реферальной ссылке! Вы получите 500₽, а ваш друг ${refId} получит 200₽!`);
+    }
+
+    const savedName = localStorage.getItem('user_name');
+    const savedEmail = localStorage.getItem('user_email');
+    const savedBalance = parseInt(localStorage.getItem('user_balance') || '0');
+    const savedHasCard = localStorage.getItem('has_card') === 'true';
+    
+    if (savedName && savedEmail) {
+      setIsRegistered(true);
+      setUserName(savedName);
+      setUserEmail(savedEmail);
+      setBalance(savedBalance);
+      setHasCard(savedHasCard);
     }
 
     const savedReferralId = localStorage.getItem('my_referral_id');
@@ -85,10 +106,17 @@ const Index = () => {
   };
 
   const simulateReferral = () => {
+    if (!isRegistered) {
+      toast.error('Сначала зарегистрируйтесь!');
+      return;
+    }
     const newCount = referralCount + 1;
     const newEarnings = totalEarnings + 200;
+    const newBalance = balance + 200;
     setReferralCount(newCount);
     setTotalEarnings(newEarnings);
+    setBalance(newBalance);
+    localStorage.setItem('user_balance', newBalance.toString());
     
     const newHistory = [...earningsHistory, newEarnings];
     setEarningsHistory(newHistory);
@@ -128,6 +156,51 @@ const Index = () => {
     toast.success('Ссылка скопирована в буфер обмена!');
   };
 
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userName || !userEmail) {
+      toast.error('Заполните все поля регистрации');
+      return;
+    }
+    localStorage.setItem('user_name', userName);
+    localStorage.setItem('user_email', userEmail);
+    localStorage.setItem('user_balance', '0');
+    setIsRegistered(true);
+    setBalance(0);
+    toast.success('🎉 Регистрация успешна! Теперь вы можете зарабатывать!');
+  };
+
+  const handleOrderCard = () => {
+    if (!isRegistered) {
+      toast.error('Сначала зарегистрируйтесь!');
+      return;
+    }
+    setHasCard(true);
+    localStorage.setItem('has_card', 'true');
+    toast.success('🎉 Заявка на карту отправлена! Карта будет доставлена в течение 7 дней.');
+  };
+
+  const handleWithdraw = () => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      toast.error('Введите корректную сумму');
+      return;
+    }
+    const amount = parseFloat(withdrawAmount);
+    if (amount > balance) {
+      toast.error('Недостаточно средств на балансе');
+      return;
+    }
+    if (amount < 500) {
+      toast.error('Минимальная сумма вывода: 500₽');
+      return;
+    }
+    setBalance(balance - amount);
+    localStorage.setItem('user_balance', (balance - amount).toString());
+    setShowWithdrawModal(false);
+    setWithdrawAmount('');
+    toast.success(`Заявка на вывод ${amount}₽ принята! Деньги поступят в течение 1-3 дней.`);
+  };
+
   const handleSubmitReceipt = (e: React.FormEvent) => {
     e.preventDefault();
     if (!receiptFile || !phone || !bank) {
@@ -164,22 +237,32 @@ const Index = () => {
                 БонусПро
               </span>
             </div>
-            <div className="hidden md:flex items-center gap-6">
-              <button onClick={() => scrollToSection('how')} className="text-sm font-semibold hover:text-primary transition-colors">
-                Как получить
-              </button>
-              <button onClick={() => scrollToSection('referral')} className="text-sm font-semibold hover:text-primary transition-colors">
-                Партнёрка
-              </button>
-              <button onClick={() => scrollToSection('withdraw')} className="text-sm font-semibold hover:text-primary transition-colors">
-                Вывод
-              </button>
-              <button onClick={() => scrollToSection('faq')} className="text-sm font-semibold hover:text-primary transition-colors">
-                FAQ
-              </button>
-              <button onClick={() => scrollToSection('contacts')} className="text-sm font-semibold hover:text-primary transition-colors">
-                Контакты
-              </button>
+            <div className="flex items-center gap-6">
+              {isRegistered && (
+                <div className="flex items-center gap-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 px-6 py-3 rounded-full border-2 border-green-500/30">
+                  <Icon name="Wallet" size={24} className="text-green-600" />
+                  <span className="text-xl font-extrabold text-green-700">{balance}₽</span>
+                </div>
+              )}
+              <div className="hidden md:flex items-center gap-6">
+                <button onClick={() => scrollToSection('how')} className="text-sm font-semibold hover:text-primary transition-colors">
+                  Как получить
+                </button>
+                <button onClick={() => scrollToSection('referral')} className="text-sm font-semibold hover:text-primary transition-colors">
+                  Партнёрка
+                </button>
+                {isRegistered && (
+                  <button onClick={() => scrollToSection('withdraw')} className="text-sm font-semibold hover:text-primary transition-colors">
+                    Вывод
+                  </button>
+                )}
+                <button onClick={() => scrollToSection('faq')} className="text-sm font-semibold hover:text-primary transition-colors">
+                  FAQ
+                </button>
+                <button onClick={() => scrollToSection('contacts')} className="text-sm font-semibold hover:text-primary transition-colors">
+                  Контакты
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -225,25 +308,89 @@ const Index = () => {
                 <div className="text-lg font-semibold">Твой бонус!</div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button 
-                size="lg" 
-                className="text-xl px-12 py-8 rounded-2xl bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-xl hover:shadow-2xl animate-scale-in w-full sm:w-auto"
-                onClick={() => scrollToSection('how')}
-              >
-                <Icon name="Rocket" size={28} className="mr-3" />
-                Начать зарабатывать
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="text-xl px-12 py-8 rounded-2xl border-2 border-primary/30 hover:bg-primary/5 w-full sm:w-auto"
-                onClick={() => scrollToSection('referral')}
-              >
-                <Icon name="Users" size={28} className="mr-3" />
-                Партнёрская программа
-              </Button>
-            </div>
+            {!isRegistered ? (
+              <div className="mb-12 max-w-md mx-auto">
+                <Card className="p-8 border-4 border-primary/40 shadow-2xl">
+                  <h3 className="text-2xl font-bold text-center mb-6">Регистрация для заработка</h3>
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name" className="text-base font-semibold">Имя</Label>
+                      <Input 
+                        id="name"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        placeholder="Введите ваше имя"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email" className="text-base font-semibold">Email</Label>
+                      <Input 
+                        id="email"
+                        type="email"
+                        value={userEmail}
+                        onChange={(e) => setUserEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    <Button 
+                      type="submit"
+                      size="lg"
+                      className="w-full text-lg py-6 bg-gradient-to-r from-primary to-accent"
+                    >
+                      <Icon name="UserPlus" size={24} className="mr-2" />
+                      Зарегистрироваться
+                    </Button>
+                  </form>
+                </Card>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  {!hasCard ? (
+                    <Button 
+                      size="lg" 
+                      className="text-xl px-12 py-8 rounded-2xl bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-xl hover:shadow-2xl animate-scale-in w-full sm:w-auto"
+                      onClick={handleOrderCard}
+                    >
+                      <Icon name="CreditCard" size={28} className="mr-3" />
+                      Оформить карту
+                    </Button>
+                  ) : (
+                    <div className="bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-3">
+                      <Icon name="CheckCircle2" size={28} />
+                      Карта оформлена!
+                    </div>
+                  )}
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="text-xl px-12 py-8 rounded-2xl border-4 border-green-500/40 hover:bg-green-500/10 w-full sm:w-auto font-bold"
+                    onClick={() => setShowWithdrawModal(true)}
+                  >
+                    <Icon name="Wallet" size={28} className="mr-3" />
+                    Вывести деньги
+                  </Button>
+                </div>
+                <div className="flex items-center justify-center gap-4">
+                  <Button 
+                    variant="outline"
+                    className="text-base px-8 py-4"
+                    onClick={() => scrollToSection('how')}
+                  >
+                    Как получить бонус
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="text-base px-8 py-4"
+                    onClick={() => scrollToSection('referral')}
+                  >
+                    Партнёрка
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <Icon name="Shield" size={20} className="text-green-500" />
@@ -686,6 +833,92 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {showWithdrawModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full p-8 animate-scale-in shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold">Вывод средств</h3>
+              <button onClick={() => setShowWithdrawModal(false)} className="text-gray-500 hover:text-gray-700">
+                <Icon name="X" size={24} />
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 p-6 rounded-xl mb-6 border-2 border-green-500/30">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-2">Доступно для вывода</p>
+                <p className="text-4xl font-extrabold text-green-600">{balance}₽</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <Label htmlFor="withdrawAmount" className="text-base font-semibold">Сумма вывода</Label>
+                <Input 
+                  id="withdrawAmount"
+                  type="number"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder="Минимум 500₽"
+                  className="h-12 text-lg"
+                />
+                <p className="text-sm text-gray-500 mt-1">Минимальная сумма: 500₽</p>
+              </div>
+
+              <div>
+                <Label className="text-base font-semibold mb-3 block">Способ вывода</Label>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => setWithdrawMethod('card')}
+                    className={`w-full p-4 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
+                      withdrawMethod === 'card' 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon name="CreditCard" size={24} className={withdrawMethod === 'card' ? 'text-primary' : 'text-gray-400'} />
+                    <div>
+                      <p className="font-semibold">Банковская карта</p>
+                      <p className="text-sm text-gray-500">Срок: 1-3 дня</p>
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => setWithdrawMethod('phone')}
+                    className={`w-full p-4 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
+                      withdrawMethod === 'phone' 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon name="Smartphone" size={24} className={withdrawMethod === 'phone' ? 'text-primary' : 'text-gray-400'} />
+                    <div>
+                      <p className="font-semibold">На номер телефона</p>
+                      <p className="text-sm text-gray-500">Срок: 1 час</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => setShowWithdrawModal(false)}
+                className="flex-1"
+              >
+                Отмена
+              </Button>
+              <Button 
+                onClick={handleWithdraw}
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600"
+              >
+                <Icon name="Check" size={20} className="mr-2" />
+                Вывести
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
