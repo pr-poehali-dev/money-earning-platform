@@ -30,7 +30,29 @@ const Index = () => {
     const link = `${window.location.origin}/?ref=${newId}`;
     setReferralLink(link);
     setShowReferralCard(true);
+    createCoinAnimation();
     toast.success('Реферальная ссылка создана! Делитесь с друзьями!');
+  };
+
+  const createCoinAnimation = () => {
+    const container = document.getElementById('coin-container');
+    if (!container) return;
+
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const coin = document.createElement('div');
+        coin.className = 'coin';
+        coin.textContent = '🪙';
+        coin.style.left = `${Math.random() * 100}%`;
+        coin.style.animationDuration = `${2 + Math.random() * 2}s`;
+        coin.style.animationDelay = `${Math.random() * 0.5}s`;
+        container.appendChild(coin);
+
+        setTimeout(() => {
+          coin.remove();
+        }, 4000);
+      }, i * 100);
+    }
   };
 
   const copyReferralLink = () => {
