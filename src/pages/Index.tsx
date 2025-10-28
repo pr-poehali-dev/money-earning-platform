@@ -390,105 +390,112 @@ const Index = () => {
           )}
 
           {showReferralCard && (
-            <Card className="p-8 mb-12 border-2 border-accent/30 bg-gradient-to-br from-white to-accent/5 animate-scale-in">
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent to-orange-600 rounded-2xl mb-4 animate-pulse-glow">
-                  <Icon name="Link" size={40} className="text-white" />
+            <Card className="p-10 mb-12 border-4 border-accent/40 bg-gradient-to-br from-white to-accent/5 animate-scale-in shadow-2xl">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-accent to-orange-600 rounded-3xl mb-6 animate-pulse-glow shadow-xl">
+                  <Icon name="Link" size={56} className="text-white" />
                 </div>
-                <h3 className="text-2xl font-bold mb-2">Твоя реферальная ссылка готова! 🎉</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-accent to-orange-600 bg-clip-text text-transparent">Твоя реферальная ссылка готова! 🎉</h3>
+                <p className="text-xl text-gray-700 mb-8 font-semibold">
                   Делись с друзьями и получай 200₽ за каждого!
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
-                  <div className="text-4xl font-extrabold mb-1">{referralCount}</div>
-                  <div className="text-sm font-semibold opacity-90">Рефералов</div>
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-10 text-white text-center shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+                  <Icon name="Users" size={40} className="mx-auto mb-3 opacity-80" />
+                  <div className="text-6xl md:text-7xl font-extrabold mb-3">{referralCount}</div>
+                  <div className="text-lg font-bold opacity-90">Рефералов</div>
                 </div>
-                <div className="bg-gradient-to-br from-primary to-purple-600 rounded-xl p-6 text-white text-center">
-                  <div className="text-4xl font-extrabold mb-1">{totalEarnings}₽</div>
-                  <div className="text-sm font-semibold opacity-90">Заработано</div>
+                <div className="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-10 text-white text-center shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+                  <Icon name="Wallet" size={40} className="mx-auto mb-3 opacity-80" />
+                  <div className="text-6xl md:text-7xl font-extrabold mb-3">{totalEarnings}₽</div>
+                  <div className="text-lg font-bold opacity-90">Заработано</div>
                 </div>
               </div>
 
               {earningsHistory.length > 0 && (
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 mb-6 border-2 border-blue-200">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Icon name="TrendingUp" size={24} className="text-blue-600" />
-                    <h4 className="text-lg font-bold text-gray-900">График роста заработка</h4>
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 mb-8 border-4 border-blue-300 shadow-xl">
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <Icon name="TrendingUp" size={36} className="text-blue-600" />
+                    <h4 className="text-2xl md:text-3xl font-extrabold text-gray-900">📈 График роста заработка</h4>
                   </div>
-                  <div className="relative h-40 flex items-end gap-2">
+                  <div className="relative h-64 md:h-80 flex items-end gap-3 bg-white rounded-xl p-6 shadow-inner">
                     {earningsHistory.map((earning, index) => {
                       const maxEarning = Math.max(...earningsHistory);
                       const height = (earning / maxEarning) * 100;
                       return (
-                        <div key={index} className="flex-1 flex flex-col items-center gap-1">
-                          <div className="text-xs font-bold text-primary">{earning}₽</div>
+                        <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                          <div className="text-base md:text-lg font-extrabold text-primary bg-white px-2 py-1 rounded-lg shadow-md">{earning}₽</div>
                           <div 
-                            className="w-full bg-gradient-to-t from-primary to-accent rounded-t-lg transition-all duration-500 hover:opacity-80"
-                            style={{ height: `${height}%` }}
+                            className="w-full bg-gradient-to-t from-primary via-purple-500 to-accent rounded-t-xl transition-all duration-500 hover:opacity-80 hover:scale-105 shadow-lg cursor-pointer"
+                            style={{ height: `${height}%`, minHeight: '40px' }}
                           />
-                          <div className="text-xs text-gray-600">{index + 1}</div>
+                          <div className="text-sm md:text-base font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">{index + 1}</div>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="text-center mt-4 text-sm text-gray-600">
-                    Рост заработка по рефералам
+                  <div className="text-center mt-6 text-lg font-bold text-gray-700 bg-white py-3 rounded-xl shadow-md">
+                    💰 Рост заработка по рефералам
                   </div>
                 </div>
               )}
               
-              <div className="bg-white rounded-xl p-4 mb-4 border-2 border-dashed border-primary/30">
-                <p className="text-sm text-gray-500 mb-2 font-semibold">Твоя ссылка:</p>
-                <div className="flex items-center gap-2">
+              <div className="bg-white rounded-2xl p-6 mb-8 border-4 border-dashed border-primary/40 shadow-xl">
+                <p className="text-lg text-gray-700 mb-4 font-bold flex items-center gap-2">
+                  <Icon name="Link2" size={24} className="text-primary" />
+                  Твоя реферальная ссылка:
+                </p>
+                <div className="flex items-center gap-3">
                   <Input 
                     value={referralLink} 
                     readOnly 
-                    className="font-mono text-sm bg-gray-50"
+                    className="font-mono text-base md:text-lg bg-gray-50 border-2 border-primary/20 h-14"
                   />
-                  <Button onClick={copyReferralLink} size="lg" className="flex-shrink-0 bg-gradient-to-r from-primary to-accent">
-                    <Icon name="Copy" size={20} />
+                  <Button onClick={copyReferralLink} size="lg" className="flex-shrink-0 bg-gradient-to-r from-primary to-accent h-14 px-6">
+                    <Icon name="Copy" size={24} />
                   </Button>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <Icon name="CircleDollarSign" size={32} className="text-green-600" />
-                  <h4 className="text-xl font-bold text-green-900">Как это работает?</h4>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border-4 border-green-300 shadow-xl">
+                <div className="flex items-center justify-center gap-4 mb-6">
+                  <Icon name="CircleDollarSign" size={48} className="text-green-600" />
+                  <h4 className="text-2xl md:text-3xl font-extrabold text-green-900">💡 Как это работает?</h4>
                 </div>
-                <ol className="space-y-3 text-gray-700">
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
-                    <span>Отправь эту ссылку другу в WhatsApp, Telegram или соцсетях</span>
+                <ol className="space-y-5 text-lg">
+                  <li className="flex items-start gap-4 bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-all">
+                    <span className="flex-shrink-0 w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">1</span>
+                    <span className="font-semibold text-gray-800">Отправь эту ссылку другу в WhatsApp, Telegram или соцсетях</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
-                    <span>Друг оформляет карту по твоей ссылке и выполняет условия</span>
+                  <li className="flex items-start gap-4 bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-all">
+                    <span className="flex-shrink-0 w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">2</span>
+                    <span className="font-semibold text-gray-800">Друг оформляет карту по твоей ссылке и выполняет условия</span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
-                    <span><strong className="text-green-700">Ты получаешь 200₽</strong> после проверки чека друга!</span>
+                  <li className="flex items-start gap-4 bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-all">
+                    <span className="flex-shrink-0 w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">3</span>
+                    <span className="font-bold text-green-700 text-xl">Ты получаешь 200₽ 🎉 после проверки чека друга!</span>
                   </li>
                 </ol>
               </div>
 
-              <div className="mt-6 flex gap-3 justify-center">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   onClick={generateReferralLink}
                   variant="outline"
-                  className="border-2 border-primary/30 hover:bg-primary/5"
+                  size="lg"
+                  className="border-4 border-primary/40 hover:bg-primary/10 text-lg py-7 px-8 font-bold"
                 >
-                  <Icon name="RefreshCw" size={20} className="mr-2" />
+                  <Icon name="RefreshCw" size={24} className="mr-3" />
                   Создать новую ссылку
                 </Button>
                 <Button 
                   onClick={simulateReferral}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90"
+                  size="lg"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 text-lg py-7 px-8 font-bold shadow-xl hover:shadow-2xl"
                 >
-                  <Icon name="UserPlus" size={20} className="mr-2" />
+                  <Icon name="UserPlus" size={24} className="mr-3" />
                   Тест: +1 реферал
                 </Button>
               </div>
