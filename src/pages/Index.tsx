@@ -14,6 +14,8 @@ const Index = () => {
   const [referralId, setReferralId] = useState<string>('');
   const [referralLink, setReferralLink] = useState<string>('');
   const [showReferralCard, setShowReferralCard] = useState(false);
+  const [referralCount, setReferralCount] = useState(0);
+  const [totalEarnings, setTotalEarnings] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -21,6 +23,18 @@ const Index = () => {
     if (refId) {
       localStorage.setItem('referral_id', refId);
       toast.success(`Вы перешли по реферальной ссылке! Вы получите 500₽, а ваш друг ${refId} получит 200₽!`);
+    }
+
+    const savedReferralId = localStorage.getItem('my_referral_id');
+    const savedCount = parseInt(localStorage.getItem('referral_count') || '0');
+    const savedEarnings = parseInt(localStorage.getItem('total_earnings') || '0');
+    
+    if (savedReferralId) {
+      setReferralId(savedReferralId);
+      setReferralLink(`${window.location.origin}/?ref=${savedReferralId}`);
+      setShowReferralCard(true);
+      setReferralCount(savedCount);
+      setTotalEarnings(savedEarnings);
     }
   }, []);
 
@@ -30,8 +44,24 @@ const Index = () => {
     const link = `${window.location.origin}/?ref=${newId}`;
     setReferralLink(link);
     setShowReferralCard(true);
+    
+    localStorage.setItem('my_referral_id', newId);
+    
     createCoinAnimation();
     toast.success('Реферальная ссылка создана! Делитесь с друзьями!');
+  };
+
+  const simulateReferral = () => {
+    const newCount = referralCount + 1;
+    const newEarnings = totalEarnings + 200;
+    setReferralCount(newCount);
+    setTotalEarnings(newEarnings);
+    
+    localStorage.setItem('referral_count', newCount.toString());
+    localStorage.setItem('total_earnings', newEarnings.toString());
+    
+    createCoinAnimation();
+    toast.success(`🎉 Новый реферал! +200₽ к заработку!`);
   };
 
   const createCoinAnimation = () => {
@@ -82,8 +112,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50">
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-purple-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 relative">
+      <div id="coin-container" className="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+      
+      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-purple-100">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -330,6 +362,17 @@ const Index = () => {
                   Делись с друзьями и получай 200₽ за каждого!
                 </p>
               </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white text-center">
+                  <div className="text-4xl font-extrabold mb-1">{referralCount}</div>
+                  <div className="text-sm font-semibold opacity-90">Рефералов</div>
+                </div>
+                <div className="bg-gradient-to-br from-primary to-purple-600 rounded-xl p-6 text-white text-center">
+                  <div className="text-4xl font-extrabold mb-1">{totalEarnings}₽</div>
+                  <div className="text-sm font-semibold opacity-90">Заработано</div>
+                </div>
+              </div>
               
               <div className="bg-white rounded-xl p-4 mb-4 border-2 border-dashed border-primary/30">
                 <p className="text-sm text-gray-500 mb-2 font-semibold">Твоя ссылка:</p>
@@ -366,7 +409,7 @@ const Index = () => {
                 </ol>
               </div>
 
-              <div className="mt-6 text-center">
+              <div className="mt-6 flex gap-3 justify-center">
                 <Button 
                   onClick={generateReferralLink}
                   variant="outline"
@@ -374,6 +417,13 @@ const Index = () => {
                 >
                   <Icon name="RefreshCw" size={20} className="mr-2" />
                   Создать новую ссылку
+                </Button>
+                <Button 
+                  onClick={simulateReferral}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90"
+                >
+                  <Icon name="UserPlus" size={20} className="mr-2" />
+                  Тест: +1 реферал
                 </Button>
               </div>
             </Card>
